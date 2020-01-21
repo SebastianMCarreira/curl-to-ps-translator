@@ -1,8 +1,8 @@
-import re, shlex
+import re, shlex, base64
 
 VALID_CURL_OPTIONS = ["-d", "--data", "-H", "--header", "-o", "--output", "-X", 
                         "--request", "--url", "-u", "--user"]
-VALID_CURL_FLAGS = ["-k", "--insecure"]
+VALID_CURL_FLAGS = []
 VALID_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"]
 
 class InvalidCurl(Exception):
@@ -50,8 +50,12 @@ def get_call_from_curl(curl):
                     call["method"] = method
                 elif part in ["--url"]:
                     call["url"] = parts.pop(0)
-                elif part in ["-k", "--insecure"]:
-                    call["insecure"] = True
+                elif part in ["-u", "--user"]:
+                    auth = parts.pop(0)
+                    if ":" in auth:
+                        call["username"], call["password"] = auth.split(":")
+                    else:
+                        call["username"] = auth
                 else:
                     raise UnkownOption
             elif valid_url(part):
@@ -62,3 +66,28 @@ def get_call_from_curl(curl):
         raise InvalidCurl
     return call
     
+
+def get_powershell_from_call(call):
+    powershell = "Invoke-RestMethod {}".format(call["url"])
+
+    if "username" in call and "password" in call:
+        basic_auth_unencoded = "{}:{}".format(call["username"],call["password"])
+        call["headers"].append({
+            "name": "Authorization",
+            "value": "Basic {}".format(base64.b64encode(basic_auth_unencoded.encode("utf-8")).decode("utf-8"))
+        })
+
+    if call["headers"]:
+        headers = "@{"+"; ".join(['"{}"="{}"'.format(h["name"], h["value"]) for h in call["headers"]])+"}"
+        powershell += " -Headers {}".format(headers)
+    
+    if "body" in call:
+        powershell += ' -Body "{}"'.call["body"]
+
+    if "method" in call:
+        powershell += ' -Method "{}"'.call["method"]
+
+    if "outfile" in call:
+        powershell += ' | ConvertTo-Json | Set-Content -Path "{}"'.format(call["outfile"])
+
+    return powershell

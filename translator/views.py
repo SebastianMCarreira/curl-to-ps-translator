@@ -1,6 +1,6 @@
 from flask import jsonify, redirect, request, render_template
 from translator import app
-from translator.translate import get_call_from_curl, InvalidCurl, UnkownOption
+from translator.translate import get_call_from_curl, InvalidCurl, UnkownOption, get_powershell_from_call
 
 @app.route('/')
 def index():
@@ -11,7 +11,7 @@ def translate():
     print(request.data)
     try:
         call = get_call_from_curl(request.data.decode("utf-8"))
-        return call
+        return get_powershell_from_call(call)
     except InvalidCurl:
         return "Bad cURL"
     except UnkownOption:
