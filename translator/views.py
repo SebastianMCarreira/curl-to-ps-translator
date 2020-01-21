@@ -1,6 +1,6 @@
 from flask import jsonify, redirect, request, render_template
 from translator import app
-from translator.translate import valid_curl
+from translator.translate import get_call_from_curl, InvalidCurl, UnkownOption
 
 @app.route('/')
 def index():
@@ -9,7 +9,10 @@ def index():
 @app.route("/translate/", methods=["POST"])
 def translate():
     print(request.data)
-    if valid_curl(request.data.decode("utf-8")):
-        return "OK"
-    else:
-        return "Invalid cURL"
+    try:
+        call = get_call_from_curl(request.data.decode("utf-8"))
+        return call
+    except InvalidCurl:
+        return "Bad cURL"
+    except UnkownOption:
+        return "Unkown Option"
