@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>cURL-PS Translator</title>
+    <link rel="stylesheet" href="static/css/styles.css">
+</head>
+
+<body>
+    <nav>
+        <img src="/static/img/curl-logo.svg" alt="cURL">
+        <span class="title-part"> to </span>
+        <img src="/static/img/ps-logo.png" alt="PS">
+        <span class="title-part"> Translator </span>
+    </nav>
+    <div id="content">
+        <div class="main-col side-col">
+            <textarea id="transl-input"></textarea>
+        </div>
+        <div class="main-col" id="translator-col">
+            <button id="mode-btn"></button><br>
+            <button value="Translate" id="translate-btn">Translate</button>
+            <input type="hidden" id="transl-mode" value="">
+        </div>
+        <div class="main-col side-col">
+            <textarea id="transl-output"></textarea>
+        </div>
+    </div>
+    <footer>
+        Created by Sebastián Carreira
+    </footer>
+    <script src="static/js/translator.js"></script>
+</body>
+
+</html>
