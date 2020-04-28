@@ -17,7 +17,7 @@ def valid_url(url):
 
 def get_call_from_curl(curl):
     parts = shlex.split(curl.replace("\r","").replace("\n"," "))
-    parts = [part for part in parts if part != "" and part != "\\"]
+    parts = [part for part in parts if part not in ("", "\\")]
     try:
         if "curl" != parts.pop(0):
             raise InvalidCurl
@@ -27,7 +27,7 @@ def get_call_from_curl(curl):
             "headers": []
         }
         while len(parts) > 0:
-            part = parts.pop(0)
+            part = parts.pop(0).strip()
             if part.startswith("-"):
                 if part in ["-d", "--data"]:
                     call["body"] = parts.pop(0)
@@ -82,10 +82,10 @@ def get_powershell_from_call(call):
         powershell += " -Headers {}".format(headers)
     
     if "body" in call:
-        powershell += ' -Body "{}"'.call["body"]
+        powershell += ' -Body "{}"'.format(call["body"])
 
     if "method" in call:
-        powershell += ' -Method "{}"'.call["method"]
+        powershell += ' -Method "{}"'.format(call["method"])
 
     if "outfile" in call:
         powershell += ' | ConvertTo-Json | Set-Content -Path "{}"'.format(call["outfile"])

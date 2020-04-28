@@ -9,10 +9,10 @@ def index():
 @app.route("/translate/", methods=["POST"])
 def translate():
     print(request.data)
-    try:
-        call = get_call_from_curl(request.data.decode("utf-8"))
-        return get_powershell_from_call(call)
-    except InvalidCurl:
-        return "Bad cURL"
-    except UnkownOption:
-        return "Unkown Option"
+    # try:
+    call = get_call_from_curl(request.data.decode("utf-8"))
+    return get_powershell_from_call(call)
+    # except InvalidCurl:
+    #     return "Bad cURL"
+    # except UnkownOption:
+    #     return "Unkown Option"
