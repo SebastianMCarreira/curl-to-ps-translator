@@ -32,7 +32,7 @@ modeBtn.addEventListener("click", (e)=>{
 
 document.getElementById("translate-btn").addEventListener("click", (e)=>{
     var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", "/translate/?mode="+modeIn.value);
+    xhttp.open("POST", URL_FOR_TRANSLATE+"?mode="+modeIn.value);
     xhttp.send(translIn.value);
     xhttp.onreadystatechange = () => {
         if(xhttp.readyState == 4){
