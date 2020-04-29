@@ -4,14 +4,14 @@
 <head>
     <meta charset="utf-8">
     <title>cURL-PS Translator</title>
-    <link rel="stylesheet" href="static/css/styles.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/styles.css')}}">
 </head>
 
 <body>
     <nav>
-        <img src="/static/img/curl-logo.svg" alt="cURL">
+        <img src="{{url_for('static', filename='img/curl-logo.svg')}}" alt="cURL">
         <span class="title-part">to</span>
-        <img src="/static/img/ps-logo.png" alt="PS">
+        <img src="{{url_for('static', filename='img/ps-logo.png')}}" alt="PS">
         <span class="title-part"> Translator </span>
     </nav>
     <div id="content">
@@ -32,7 +32,7 @@
     <footer>
         Created by Sebastián Carreira
     </footer>
-    <script src="static/js/translator.js"></script>
+    <script src="{{url_for('static', filename='js/translator.js')}}"></script>
 </body>
 
 </html>
