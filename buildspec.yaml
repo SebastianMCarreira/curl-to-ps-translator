@@ -8,20 +8,16 @@ phases:
       python: 3.8
   pre_build:
     commands:
-       - echo Installing Virtualenv and Zappa
-       - pip install zappa virtualenv
-       - echo Installing requirements
+       - echo Installing Virtualenv
+       - pip install virtualenv
+       - virtualenv venv
+  build:
+    commands:
+       - echo Installing requirements and zappa
+       - source venv/bin/activate
        - pip install -r requirements.txt
        - echo Installing Zappa
        - pip install zappa
-  build:
-    commands:
-       - echo Creating Virtualenv Folder
-       - virtualenv venv
-       - echo Building Virtualenv
-       - source venv/bin/activate
-       - pip install -r requirements.txt
-       - deactivate
        - echo Deploying To Dev
        - zappa update dev
 
