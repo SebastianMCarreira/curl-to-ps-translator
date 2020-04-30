@@ -23,16 +23,5 @@ phases:
        - pip install -r requirements.txt
        - deactivate
        - echo Deploying To Dev
-  post_build:
-    commands:
-       - rm loader.py
-       - rm requirements.txt
-       - rm -rf templates
-       - echo "Static site generated"
-artifacts:
-  type: zip
-  files:
-    - ./*
-    - ./*/*
-    - ./static/*/*
-  name: personal-web-$APPVERSION-$CODEBUILD_BUILD_ID
+       - zappa update dev
+
