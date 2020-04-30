@@ -1,0 +1,38 @@
+version: 0.1
+env:
+  variables:
+     APPVERSION: "v0.1.0"
+phases:
+  install:
+    runtime-versions:
+      python: 3.7
+  pre_build:
+    commands:
+       - echo Installing Virtualenv & Zappa
+       - pip install zappa virtualenv
+       - echo Installing requirements
+       - pip install -r requirements.txt
+       - echo Installing Zappa
+       - pip install zappa
+  build:
+    commands:
+       - echo Creating Virtualenv Folder
+       - virtualenv venv
+       - echo Building Virtualenv
+       - source venv/bin/activate
+       - pip install -r requirements.txt
+       - deactivate
+       - echo Deploying To Dev
+  post_build:
+    commands:
+       - rm loader.py
+       - rm requirements.txt
+       - rm -rf templates
+       - echo "Static site generated"
+artifacts:
+  type: zip
+  files:
+    - ./*
+    - ./*/*
+    - ./static/*/*
+  name: personal-web-$APPVERSION-$CODEBUILD_BUILD_ID
