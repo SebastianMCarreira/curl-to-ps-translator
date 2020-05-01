@@ -1,13 +1,22 @@
 version: 0.2
 env:
   variables:
-     APPVERSION: "v0.1.0"
+    APPVERSION: "v0.1.0"
+    AWS_REGION: sa-east-1
+  secrets-manager:
+    AWS_ACCESS_KEY: zappa-keys:zappa-access-key
+    AWS_SECRET_KEY: zappa-keys:zappa-secret-key
 phases:
   install:
     runtime-versions:
       python: 3.8
   pre_build:
     commands:
+       - echo Configuring Profile
+       - touch ~/.aws/credentials
+       - echo "[zappa]" >> ~/.aws/credentials
+       - echo "aws_access_key_id = $AWS_ACCESS_KEY" >> ~/.aws/credentials
+       - echo "aws_secret_access_key = $AWS_SECRET_KEY" >> ~/.aws/credentials
        - echo Installing Virtualenv
        - pip install virtualenv
        - virtualenv venv
@@ -19,5 +28,6 @@ phases:
        - echo Installing Zappa
        - pip install zappa
        - echo Deploying To Dev
-       - zappa update dev
+       - zappa undeploy dev
+       - zappa deploy dev
 

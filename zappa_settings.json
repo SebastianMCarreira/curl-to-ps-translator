@@ -2,7 +2,7 @@
     "dev": {
         "app_function": "translator.app",
         "aws_region": "sa-east-1",
-        "profile_name": "default",
+        "profile_name": "zappa",
         "project_name": "curl-ps-restmet",
         "runtime": "python3.7",
         "s3_bucket": "zapa-test-scarreira"
