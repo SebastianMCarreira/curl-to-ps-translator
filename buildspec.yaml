@@ -22,6 +22,8 @@ phases:
        - echo "[profile zappa]" >> ~/.aws/config
        - echo "region = $AWS_REGION" >> ~/.aws/config
        - echo Installing Virtualenv
+       - touch ./APPVERSION
+       - echo "$APPVERSION" >> ./APPVERSION
        - pip install virtualenv
        - virtualenv venv
   build:
