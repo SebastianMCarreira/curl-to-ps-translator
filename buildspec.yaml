@@ -27,7 +27,6 @@ phases:
        - pip install -r requirements.txt
        - echo Installing Zappa
        - pip install zappa
-       - echo Deploying To Dev
-       - zappa undeploy dev
-       - zappa deploy dev
+       - echo Updating Dev
+       - zappa update dev
 
