@@ -13,10 +13,10 @@ phases:
   pre_build:
     commands:
        - echo Configuring Profile
-       - touch ~/.aws/credentials
-       - echo "[zappa]" >> ~/.aws/credentials
-       - echo "aws_access_key_id = $AWS_ACCESS_KEY" >> ~/.aws/credentials
-       - echo "aws_secret_access_key = $AWS_SECRET_KEY" >> ~/.aws/credentials
+       - touch ./credentials
+       - echo "[zappa]" >> ./credentials
+       - echo "aws_access_key_id = $AWS_ACCESS_KEY" >> ./credentials
+       - echo "aws_secret_access_key = $AWS_SECRET_KEY" >> ./credentials
        - echo Installing Virtualenv
        - pip install virtualenv
        - virtualenv venv
