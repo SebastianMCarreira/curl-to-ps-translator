@@ -1,13 +1,11 @@
 import re, shlex
+from flask import abort
 
 def valid_url(url):
     pattern = re.compile(r'^([a-zA-Z]+:\/\/)?([a-zA-Z0-9_\-\.]+)(:[0-9]+)?(\/.+)?$')
     return bool(pattern.match(url))
 
 class InvalidRequest(Exception):
-    pass
-
-class InvalidPowershell(InvalidRequest):
     pass
 
 class UnkownOption(Exception):
@@ -17,18 +15,24 @@ VALID_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TR
 
 class HttpRequest():
     def __init__(self, url, headers={}, method='GET', body=None, auth=None):
+        self.setUrl(url)
+        self.headers = headers
+        self.setMethod(method)
+        self.body = body
+        self.auth = auth
+
+    def setUrl(self, url):
         if not url or not valid_url(url):
             raise InvalidRequest('The request must include a valid URL. Given URL: {}'.format(url))
         if not url.startswith('https://'):
             self.url = 'http://' + url
         else:
             self.url = url
-        self.headers = headers
+    
+    def setMethod(self, method):
         if method not in VALID_METHODS:
             raise InvalidRequest('The given method is invalid. Given method: {}'.format(method))
         self.method = method
-        self.body = body
-        self.auth = auth
     
     def getCurl(self):
         output = 'curl '
@@ -85,12 +89,18 @@ class InvalidCurl(InvalidRequest):
 
 class CurlRequest(HttpRequest):
     def __init__(self, curl):
+        self.originalCommand = curl
+
+        self.method = "GET"
         self.headers = {}
+        self.url = None
+        self.auth = None
+        self.body = None
         parts = shlex.split(curl.replace("\r","").replace("\n"," "))
         parts = [part for part in parts if part not in ("", "\\")]
         try:
             if "curl" != parts.pop(0):
-                raise InvalidCurl
+                raise InvalidCurl('The command must start with "curl"')
             while len(parts) > 0:
                 part = parts.pop(0).strip()
                 if part.startswith("-"):
@@ -99,18 +109,15 @@ class CurlRequest(HttpRequest):
                     elif part in ["-H", "--header"]:
                         header = parts.pop(0)
                         if ":" not in header:
-                            raise InvalidCurl
+                            raise InvalidCurl('The headers must be key-values pairs separated by a colon ":"')
                         header_parts = header.split(":")
                         self.headers[header_parts[0].strip()] = header_parts[1].strip()
                     # elif part in ["-o", "--output"]:
                     #     call["outfile"] = parts.pop(0)
                     elif part in ["-X", "--request"]:
-                        method = parts.pop(0)
-                        if method not in VALID_METHODS:
-                            raise InvalidCurl
-                        self.method = method
+                        self.setMethod(parts.pop(0))
                     elif part in ["--url"]:
-                        self.url = parts.pop(0)
+                        self.setUrl(parts.pop(0))
                     elif part in ["-u", "--user"]:
                         self.auth = {}
                         auth = parts.pop(0)
@@ -119,10 +126,65 @@ class CurlRequest(HttpRequest):
                         else:
                             self.auth["username"] = auth
                     else:
-                        raise UnkownOption
-                elif valid_url(part):
-                    self.url = part
+                        raise UnkownOption('Given option "{}" not recognized.'.format(part))
+                else:
+                    self.setUrl(part)
         except IndexError:
             raise InvalidCurl
         if not self.url:
-            raise InvalidCurl
+            raise InvalidCurl('The command must include an URI.')
+    
+    def getCurl(self):
+        return self.originalCommand
+
+
+class InvalidPowershell(InvalidRequest):
+    pass
+
+class PowershellRequest(HttpRequest):
+    def __init__(self, powershell):
+        self.originalCommand = powershell
+
+        self.method = "GET"
+        self.headers = {}
+        self.url = None
+        self.auth = None
+        self.body = None
+        if "@{" in powershell:
+            psObjects = re.findall('@{[^}]*}',powershell)
+            for psObj in psObjects:
+                psObj_no_whitespace = "".join(shlex.split(psObj.replace('"','\\\"').replace("'","\\\'")))
+                powershell = powershell.replace(psObj, psObj_no_whitespace)
+        parts = shlex.split(powershell.replace("\r","").replace("\n"," "))
+        parts = [part for part in parts if part not in ("", "\\")]
+        try:
+            if "Invoke-RestMethod" != parts.pop(0):
+                raise InvalidPowershell('The command must start with "Invoke-RestMethod"')
+            while len(parts) > 0:
+                part = parts.pop(0).strip()
+                if part.startswith("-"):
+                    if part == '-Body':
+                        self.body = parts.pop(0)
+                    elif part == '-Headers':
+                        headers = parts.pop(0).replace('@{','').replace('}','').split(";")
+                        for header in headers:
+                            if header:
+                                key, value = header.split('=')
+                                self.headers[key] = value
+                    # elif part in ["-o", "--output"]:
+                    #     call["outfile"] = parts.pop(0)
+                    elif part == '-Method':
+                        self.setMethod(parts.pop(0))
+                    elif part == '-Uri':
+                        self.setUrl(parts.pop(0))
+                    elif part == '-Credential':
+                        abort(501,'Parsing credentials from a PowerShell command is not implemented.')
+                    else:
+                        raise UnkownOption('Given option "{}" not recognized.'.format(part))
+        except IndexError:
+            raise InvalidPowershell
+        if not self.url:
+            raise InvalidPowershell('The command must include an URI.')
+
+    def getPowershell(self):
+        return self.originalCommand

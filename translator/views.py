@@ -1,5 +1,5 @@
 from flask import jsonify, redirect, request, render_template
-from translator import app
+from translator.translator import app
 from translator.translate import get_call_from_curl, InvalidCurl, UnkownOption, get_powershell_from_call
 
 APPVERSION = app.config["APPVERSION"]
