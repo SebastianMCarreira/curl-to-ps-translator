@@ -8,3 +8,5 @@ if "APPVERSION" in os.listdir():
         APPVERSION = f.read()
 else:
     APPVERSION = "Dev"
+
+DYNAMO_TABLE_NAME = 'curl-to-ps-dev'

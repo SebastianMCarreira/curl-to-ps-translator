@@ -1,8 +1,9 @@
 import re, shlex
 from flask import abort
+import os
 
 def valid_url(url):
-    pattern = re.compile(r'^([a-zA-Z]+:\/\/)?([a-zA-Z0-9_\-\.]+)(:[0-9]+)?(\/.+)?$')
+    pattern = re.compile(r'^([a-zA-Z]+:\/\/)?([a-zA-Z0-9_\-\.]+)(:[0-9]+)?(\/.*)?$')
     return bool(pattern.match(url))
 
 class InvalidRequest(Exception):
@@ -14,7 +15,7 @@ class UnkownOption(Exception):
 VALID_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "TRACE", "CONNECT"]
 
 class HttpRequest():
-    def __init__(self, url, headers={}, method='GET', body=None, auth=None):
+    def __init__(self, url, headers={}, method='GET', body='', auth=None):
         self.setUrl(url)
         self.headers = headers
         self.setMethod(method)
@@ -22,6 +23,9 @@ class HttpRequest():
         self.auth = auth
 
     def setUrl(self, url):
+        '''
+            Sets URL/URI of the request unless the given URI is invalid.
+        '''
         if not url or not valid_url(url):
             raise InvalidRequest('The request must include a valid URL. Given URL: {}'.format(url))
         if not url.startswith('https://'):
@@ -30,11 +34,17 @@ class HttpRequest():
             self.url = url
     
     def setMethod(self, method):
-        if method not in VALID_METHODS:
+        '''
+            Sets method of the request unless the given method is invalid.
+        '''
+        if method.upper() not in VALID_METHODS:
             raise InvalidRequest('The given method is invalid. Given method: {}'.format(method))
-        self.method = method
+        self.method = method.upper()
     
     def getCurl(self):
+        '''
+            Returns the equivalen curl command for the request.
+        '''
         output = 'curl '
         for header in self.headers:
             output += '-H "{}: {}" '.format(header, self.headers[header])
@@ -54,6 +64,9 @@ class HttpRequest():
         return output + self.url     
 
     def getPowershell(self):
+        '''
+            Returns the equivalen PowerShell command for the request.
+        '''
         output = 'Invoke-RestMethod '
         
         if self.headers:
@@ -81,8 +94,15 @@ class HttpRequest():
                     'Get-Credential -Message "Enter your credentials." -UserName "{}"'.format(self.auth['username'])
                 )
 
-        return output + '-Uri ' + self.url        
+        return output + '-Uri ' + self.url
 
+    def __repr__(self):
+        return 'HttpRequest("{}", headers={}, method="{}", body="{}", auth={})'.format(
+            self.url, self.headers, self.method, self.body, self.auth
+        )
+    
+    def __str__(self):
+        return '{}  {}'.format(self.method, self.url)
 
 class InvalidCurl(InvalidRequest):
     pass
@@ -95,7 +115,7 @@ class CurlRequest(HttpRequest):
         self.headers = {}
         self.url = None
         self.auth = None
-        self.body = None
+        self.body = ''
         parts = shlex.split(curl.replace("\r","").replace("\n"," "))
         parts = [part for part in parts if part not in ("", "\\")]
         try:
@@ -149,7 +169,7 @@ class PowershellRequest(HttpRequest):
         self.headers = {}
         self.url = None
         self.auth = None
-        self.body = None
+        self.body = ''
         if "@{" in powershell:
             psObjects = re.findall('@{[^}]*}',powershell)
             for psObj in psObjects:
@@ -188,3 +208,33 @@ class PowershellRequest(HttpRequest):
 
     def getPowershell(self):
         return self.originalCommand
+
+
+class Report():
+    dynamodb_table = None
+
+    def __init__(self, data, save_to_dynamo=True):
+        REQUIRED_PARAMETERS = ['mode', 'original', 'translated', 'report']
+        if all(x in data for x in REQUIRED_PARAMETERS):
+            self.mode = data['mode']
+            self.original = data['original']
+            self.translated = data['translated']
+            self.report = data['report']
+        else:
+            abort(400, 'Report must include the followin parameters: {}'.format(', '.join(REQUIRED_PARAMETERS)))
+        if save_to_dynamo:
+            self.save_to_dynamo()
+
+    def to_dict(self):
+        return {
+            'mode':self.mode,
+            'original':self.original,
+            'translated':self.translated,
+            'report':self.report,
+            'report_id': os.urandom(16).hex()
+        }
+
+    def save_to_dynamo(self):
+        if not Report.dynamodb_table:
+            abort(500, 'DynamoDB table not initialized.')
+        Report.dynamodb_table.put_item(Item=self.to_dict())

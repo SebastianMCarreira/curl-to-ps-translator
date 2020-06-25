@@ -1,4 +1,4 @@
-from translator.translator import app
+from translator import app
 
 
 if __name__ == "__main__":

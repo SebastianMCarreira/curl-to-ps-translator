@@ -4,18 +4,18 @@ nav {
     padding-left: 20px;
 }
 
-img {
+nav > img {
     height: 9vh;
 }
 
 body {
     margin: 0px;
+    font-family: monospace;
 }
 
 .title-part {
     font-size: 11vh;
     padding: 0px 0.3em;
-    font-family: monospace;
     font-weight: bold;
 }
 
@@ -24,6 +24,7 @@ body {
     height: 83vh;
     width: 100%;
     display: flex;
+    justify-content: space-between;
 }
 
 footer {
@@ -39,16 +40,14 @@ footer {
 }
 
 #translator-col {
-    width: 18%;
-}
-
-#translator-col>div{
-    padding-top: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .side-col {
     width: 40%;
-    padding: 1%;
+    padding-top: 1%;
 }
 
 textarea {
@@ -66,4 +65,64 @@ button{
 #app-version{
     float: right;
     padding-right: 20px;
+}
+
+#modal {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 10;
+    background-color: rgba(250,250,250,0.5);
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-body {
+    height: 50vh;
+    width: 70vw;
+    background-color: #0277BD;
+    border: 5px solid #ccc;
+    padding: 1%;
+    color: white;
+}
+
+.modal-header {
+    height: 15%;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.modal-content {
+    height: 75%;
+}
+
+.modal-footer {
+    height: 10%;
+}
+
+.modal-footer > #report-btn {
+    width: 20%;
+    float: right;
+}
+
+.modal-footer > #close-report-btn {
+    width: 20%;
+    float: left;
+}
+
+.translation-row {
+    padding: 5px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.translation-row > div{
+    display: inline;
+}
+
+.translation-code {
+    font-weight: bold;
 }

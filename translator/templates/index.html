@@ -17,23 +17,64 @@
     <div id="content">
         <div class="main-col side-col">
             <textarea id="transl-input"></textarea>
+            <input type="hidden" value="" id="transl-input-hidd">
         </div>
         <div class="main-col" id="translator-col">
             <div>
                 <button id="mode-btn"></button><br>
                 <button value="Translate" id="translate-btn">Translate</button>
                 <input type="hidden" id="transl-mode" value="">
+                <button value="Report" id="open-report-btn">Report bad translation</button>
             </div>
         </div>
         <div class="main-col side-col">
             <textarea id="transl-output"></textarea>
+            <input type="hidden" value="" id="transl-output-hidd">
         </div>
     </div>
     <footer>
         Created by Sebastián Carreira <span id="app-version">{{app_version}}</span>
     </footer>
+    <div id="modal">
+        <div class="modal-body">
+            <div class="modal-header">
+                Report a bad translation
+            </div>
+            <div class="modal-content">
+                <div class="translation-row">
+                    <div class="translation-original">
+                        <div class="translation-label">
+                            <span id="original-code-label"></span> original code:
+                        </div>
+                        <div class="translation-code">
+                            <span id="original-code"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <img height="30px" src="{{url_for('static', filename='img/arrow-right.png')}}" alt="->">
+                    </div>
+                    <div class="translation-result">
+                        <div class="translation-label">
+                            <span id="translation-code-label"></span> result code:
+                        </div>
+                        <div class="translation-code">
+                            <span id="translation-code"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="report-content">
+                    <textarea name="report-content" id="report-content" cols="30" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="close-report-btn">Cancel</button>
+                <button id="report-btn">Send Report</button>
+            </div>
+        </div>
+    </div>
     <script>
         const URL_FOR_TRANSLATE = "{{url_for('translate')}}";
+        const URL_FOR_REPORT = "{{url_for('report')}}";
     </script>
     <script src="{{url_for('static', filename='js/translator.js')}}"></script>
 </body>
