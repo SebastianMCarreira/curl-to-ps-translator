@@ -1,7 +1,7 @@
 version: 0.2
 env:
   variables:
-    APPVERSION: "v0.2.0"
+    APPVERSION: "v1.0.0"
     AWS_REGION: sa-east-1
     APPNAME: "curl-to-ps"
   secrets-manager:
