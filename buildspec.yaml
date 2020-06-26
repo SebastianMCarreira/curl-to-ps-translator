@@ -1,8 +1,9 @@
 version: 0.2
 env:
   variables:
-    APPVERSION: "v0.1.0"
+    APPVERSION: "v0.2.0"
     AWS_REGION: sa-east-1
+    APPNAME: "curl-to-ps"
   secrets-manager:
     AWS_ACCESS_KEY: zappa-keys:zappa-access-key
     AWS_SECRET_KEY: zappa-keys:zappa-secret-key
@@ -22,8 +23,6 @@ phases:
        - echo "[profile zappa]" >> ~/.aws/config
        - echo "region = $AWS_REGION" >> ~/.aws/config
        - echo Installing Virtualenv
-       - touch ./APPVERSION
-       - echo "$APPVERSION" >> ./APPVERSION
        - pip install virtualenv
        - virtualenv venv
   build:
@@ -33,6 +32,9 @@ phases:
        - pip install -r requirements.txt
        - echo Installing Zappa
        - pip install zappa
-       - echo Updating Dev
-       - zappa update dev
-
+       - echo Updating "$STAGE"
+       - zappa update "$STAGE"
+  post_build:
+    commands:
+       - echo Setting up ENVARS in Lambda
+       - aws lambda update-function-configuration --function-name "$APPNAME-$STAGE" --environment "{\"Variables\":{\"APPVERSION\":\"$APPVERSION\",\"DYNAMODB_TABLE\":\"$DYNAMODB_TABLE\"}}"

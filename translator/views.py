@@ -4,7 +4,7 @@ from translator.models import CurlRequest, PowershellRequest, InvalidRequest, Un
 import boto3
 
 APPVERSION = app.config["APPVERSION"]
-Report.dynamodb_table = boto3.resource('dynamodb').Table(app.config['DYNAMO_TABLE_NAME'])
+Report.dynamodb_table = boto3.resource('dynamodb').Table(app.config['DYNAMODB_TABLE'])
 
 @app.route('/')
 def index():
